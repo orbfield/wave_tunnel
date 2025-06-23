@@ -1,10 +1,12 @@
 # evolution.py
 
 import numpy as np
+from pml import apply_pml_damping
 
-def evolve_wavefunction(psi, x, dt, V_total):
+def evolve_wavefunction(psi, x, dt, V_total, W_pml=None):
     """
     Evolve the wavefunction psi by a time step dt using the split-operator method.
+    Optionally applies PML boundary conditions.
     """
     dx = x[1] - x[0]
     N = len(x)
@@ -25,5 +27,9 @@ def evolve_wavefunction(psi, x, dt, V_total):
     psi_k = np.fft.fft(psi)
     psi_k *= exp_T
     psi = np.fft.ifft(psi_k)
+
+    # Apply PML damping if provided
+    if W_pml is not None:
+        psi = apply_pml_damping(psi, W_pml, dt)
 
     return psi
