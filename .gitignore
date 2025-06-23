@@ -33,8 +33,7 @@ ENV/
 *.swo
 
 # Output files
-*.gif
-*.png
+
 *.jpg
 *.jpeg
 
