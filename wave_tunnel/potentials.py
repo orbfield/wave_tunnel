@@ -1,7 +1,7 @@
 # potentials.py
 
 import numpy as np
-from pml import create_pml_absorbing_potential
+from wave_tunnel.pml import create_pml_absorbing_potential
 
 def create_potential_barrier(x, barrier_center=0.0, V0=20.0, barrier_width=1.0, transition_width=0.05):
     """

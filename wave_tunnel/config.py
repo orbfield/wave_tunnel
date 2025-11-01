@@ -108,16 +108,38 @@ class WavePacketConfig:
         """de Broglie wavelength."""
         return 2 * np.pi / self.momentum
 
-    def validate_resolution(self, dx: float, min_points_per_wavelength: int = 10):
-        """Validate spatial resolution is adequate."""
+    def validate_resolution(self, dx: float, min_points_per_wavelength: int = 10,
+                            strict: bool = False):
+        """
+        Validate spatial resolution is adequate.
+
+        Parameters
+        ----------
+        dx : float
+            Grid spacing
+        min_points_per_wavelength : int
+            Minimum points per de Broglie wavelength
+        strict : bool
+            If True, raises error. If False, only warns for visualization-quality resolution
+        """
         points_per_wavelength = self.wavelength / dx
 
         if points_per_wavelength < min_points_per_wavelength:
-            raise ValueError(
-                f"Insufficient resolution: {points_per_wavelength:.1f} points/wavelength. "
-                f"Need at least {min_points_per_wavelength}. "
-                f"Either increase num_points or decrease momentum."
+            msg = (
+                f"Resolution: {points_per_wavelength:.1f} points/wavelength. "
+                f"Recommended: {min_points_per_wavelength}+ for quantitative accuracy."
             )
+
+            if strict:
+                raise ValueError(msg + " Either increase num_points or decrease momentum.")
+            elif points_per_wavelength < 2:
+                # Too low even for visualization
+                raise ValueError(f"Critically under-resolved: {points_per_wavelength:.1f} points/wavelength. " +
+                               "Need at least 2 points/wavelength.")
+            else:
+                # Acceptable for visualization
+                print(f"  ⚠️  {msg}")
+                print(f"     Acceptable for visualization, but not for quantitative research.")
 
 
 @dataclass
@@ -292,6 +314,9 @@ class SimulationConfig:
     verbose: bool = True
     """Print detailed progress information"""
 
+    strict_validation: bool = False
+    """Enforce strict physics validation (True for research, False for visualization)"""
+
     def validate(self):
         """Validate configuration and cross-check parameters."""
         # Check wave packet energy vs barrier height
@@ -308,7 +333,7 @@ class SimulationConfig:
 
         # Check spatial resolution
         dx = self.spatial.dx
-        self.wave_packet.validate_resolution(dx)
+        self.wave_packet.validate_resolution(dx, strict=self.strict_validation)
 
         # Auto-calculate num_frames if needed
         if self.visualization.num_frames is None:

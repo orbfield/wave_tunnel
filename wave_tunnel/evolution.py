@@ -1,7 +1,7 @@
 # evolution.py
 
 import numpy as np
-from pml import apply_pml_damping
+from wave_tunnel.pml import apply_pml_damping
 
 def evolve_wavefunction(psi, x, dt, V_total, W_pml=None):
     """
